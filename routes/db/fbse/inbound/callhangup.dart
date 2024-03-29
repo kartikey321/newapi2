@@ -12,7 +12,6 @@ import '../../../../createLeads/leadPersonalDetailsModel.dart';
 
 Constants constant = Constants();
 
-
 Future<Response> onRequest(RequestContext context) async {
   // TODO: implement route handler
   switch (context.request.method) {
@@ -45,15 +44,20 @@ Future<Response> fetchCompanyID(RequestContext context) async {
   constant.didNumber = body["call_to_number"] as String;
   constant.callerNumber = body["customer_no_with_prefix "] as String;
   constant.callStartStamp = body["start_stamp"] as String;
-    constant.callAnsweredStamp = body["answer_stamp"] as String;
-    constant.callEndStamp=body["end_stamp"] as String;
-        constant.hangUpCause = body["hangup_cause"] as String;
-           constant.callDirection = body["direction"] as String;
-           constant.callduration=body["duration"] as String;
-             constant.answeredAgentNo = body["answered_agent_number"] as String;
-            constant.recordingLink = body["recording_url"] as String;
-               constant.callStatus = body["call_status"] as String;
+  constant.callAnsweredStamp = body["answer_stamp"] as String;
+  constant.callEndStamp = body["end_stamp"] as String;
+  constant.hangUpCause = body["hangup_cause"] as String;
+  constant.callDirection = body["direction"] as String;
+  constant.callduration = body["duration"] as String;
+  constant.answeredAgentNo = body["answered_agent_number"] as String;
+  constant.recordingLink = body["recording_url"] as String;
+  constant.callStatus = body["call_status"] as String;
+  if (constant.callStatus == "missed") {
+    constant.answeredAgentNo =
+        "+91" + body["missed_agent"][0]["agent_number"].toString().substring(1);
 
+    print("number is " + constant.answeredAgentNo.toString());
+  }
 
   print(body.toString());
   await constant.db
@@ -99,37 +103,32 @@ Future<Response> createLead(RequestContext context) async {
   //     designation: constant.empDesignation!);
 
   Lead leadData = Lead(
-      companyId: constant.companyID,
-      id: leadId,
-      source: "Newspaper",
-      status: "Fresh",
-      subStatus: "",
-      hotLead: false,
-      createdOn: DateTime.now(),
-      leadStatusType: LeadStatusType.FRESH,
-      personalDetails: leadPersonalDetails,
-      subsource: "",
-      );
+    companyId: constant.companyID,
+    id: leadId,
+    source: "Newspaper",
+    status: "Fresh",
+    subStatus: "",
+    hotLead: false,
+    createdOn: DateTime.now(),
+    leadStatusType: LeadStatusType.FRESH,
+    personalDetails: leadPersonalDetails,
+    subsource: "",
+  );
 
   LeadsSection leadsSection = LeadsSection();
 
-
-
-await constant.db
+  await constant.db
       .collection("Companies")
       .document(constant.companyID!)
       .collection("leads")
       .where("personalDetails.mobileNo", isEqualTo: constant.callerNumber)
       .get()
-      .then(
-    (value) async {
-      if (value.toString() == "[]") {
-
-constant.isNewLeadCall=true;
-  leadsSection.addLead(leadData);
-
-      }});
-
+      .then((value) async {
+    if (value.toString() == "[]") {
+      constant.isNewLeadCall = true;
+      leadsSection.addLead(leadData);
+    }
+  });
 
   return createCallDetails(context);
 }
@@ -168,18 +167,14 @@ Future<Response> createCallDetails(RequestContext context) async {
       isSmsSent: false,
       callDateTime: DateTime.now().toString(),
       advertisedNumber: false,
-      callDirection:constant.callDirection,
+      callDirection: constant.callDirection,
       currentCallStatus: "Ended");
 
-
-      
-if(constant.callStatus=="answered")
-{
-  callrecord.updateCallRecord(callDetails);
-} else {
-
-   callrecord.addCallRecord(callDetails);
-}
+  if (constant.callStatus == "answered") {
+    callrecord.updateCallRecord(callDetails);
+  } else {
+    callrecord.addCallRecord(callDetails);
+  }
 
   return Response.json(body: "done");
 }
