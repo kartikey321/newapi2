@@ -30,6 +30,8 @@ String? baseID;
     String? callEndStamp;
     String? hangUpCause;
     bool? isNewLeadCall;
+    String? source;
+    bool? leadAssigned;
     
 
 }

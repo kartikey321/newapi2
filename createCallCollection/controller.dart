@@ -64,9 +64,14 @@ class CallRecord {
       //     (callDetails.recordingLink!.isNotEmpty &&
       //         callDetails.recordingLink != ""))
       {
+        Future.delayed(Duration(seconds: 20), () {
+      // This code will execute after 2 seconds
+      updateRecordingLink(callDetails.companyID.toString(), callDetails.cuid.toString(), callDetails.recordingLink.toString());
+      
+    });
     
 
-updateRecordingLink(callDetails.companyID.toString(), callDetails.cuid.toString(), callDetails.recordingLink.toString());
+
 
       }
             
@@ -76,6 +81,8 @@ updateRecordingLink(callDetails.companyID.toString(), callDetails.cuid.toString(
 
 
 updateRecordingLink(String companyId,String callId,String recordingLink) async {
+
+  print("recording url : $recordingLink");
 
 var storagePath= "Companies/$companyId/CallRecordingCollection/$callId";
   try {
@@ -90,7 +97,7 @@ var storagePath= "Companies/$companyId/CallRecordingCollection/$callId";
       // Get the download URL of the uploaded file
       await ref.getDownloadURL().then((value) async {
 
-          c.db.collection("Comapanies").document(companyId).collection("conversations").document("telephony").collection("call collection").document(callId).update({
+          c.db.collection("Companies").document(companyId).collection("conversations").document("telephony").collection("call collection").document(callId).update({
 "recordingLink":value.toString()
 
           });
@@ -98,6 +105,8 @@ var storagePath= "Companies/$companyId/CallRecordingCollection/$callId";
 
       });
     } else {
+
+      print(response.statusCode);
       print('Failed to fetch the file from the internet.');
 
     }

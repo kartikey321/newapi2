@@ -58,6 +58,7 @@ print(body.toString());
       .then(
     (value) {
       constant.companyID = value[0]["companyId"] as String;
+      constant.source =   constant.companyID = value[0]["distributedAt"] as String;
       // print(constant.companyID);
     },
   );
@@ -77,7 +78,7 @@ Future<Response> checkLeadExists(
       .where("personalDetails.mobileNo", isEqualTo: constant.callerNumber)
       .get()
       .then((value) async {
-    if (value.toString() != "[]") {
+    if (value.toString() != "[]" && value[0]["owner"]["name"].toString()!="" )  {
       // this means lead exists and data is extracted and now goto emplyee collection to check weather employee is avaialbe or busy
       constant.empID = value[0]["owner"]["id"] as String;
       constant.empName = value[0]["owner"]["name"] as String;
@@ -135,9 +136,6 @@ Future<Response> checkLeadExists(
           print("Number provided to customer : " +
               constant.agentNumbers.toString());
 
-          log("Number provided to customer printing 2nd time : " +
-              constant.agentNumbers.toString());
-
 
 
           mainres = resMap;
@@ -165,7 +163,7 @@ Future<Response> checkLeadExists(
               advertisedNumber: false,
               callDirection: "inbound",
               duration: "",
-              source: "Sales",
+              source: constant.source,
               endStamp: "",
               ivrId: "11111",
               ivrName: "testivr",
@@ -175,7 +173,8 @@ Future<Response> checkLeadExists(
               callAnswerStamp: "",
               callEndStamp: "",
               currentCallStatus: "Ended",
-              hangUpCause: "Agent Busy Ended By IVR");
+              hangUpCause: "Agent Busy Ended By IVR",
+              leadAssigned: false);
 
           callrecord.addCallRecord(callDetails);
 
@@ -286,7 +285,7 @@ Future<Response> leadNotExists(RequestContext context) async {
                         advertisedNumber: false,
                         callDirection: "inbound",
                         duration: "",
-                        source: "Sales",
+                        source: constant.source,
                         endStamp: "",
                         ivrId: "11111",
                         ivrName: "testivr",
@@ -377,7 +376,7 @@ Future<Response> leadNotExists(RequestContext context) async {
                         advertisedNumber: false,
                         callDirection: "inbound",
                         duration: "",
-                        source: "Sales",
+                        source: constant.source,
                         endStamp: "",
                         ivrId: "11111",
                         ivrName: "testivr",
@@ -387,7 +386,8 @@ Future<Response> leadNotExists(RequestContext context) async {
                         callAnswerStamp: "",
                         callEndStamp: "",
                         currentCallStatus: "Ended",
-                        hangUpCause: "Agent Busy Ended By IVR");
+                        hangUpCause: "Agent Busy Ended By IVR",
+                        leadAssigned: false);
 
                     callrecord.addCallRecord(callDetails);
 

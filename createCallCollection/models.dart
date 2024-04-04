@@ -34,6 +34,7 @@ class CreateCallCollection {
   String? callEndStamp;
   String? callAnswerStamp;
   String? hangUpCause;
+  bool? leadAssigned;
       String? currentCallStatus;
   CreateCallCollection({
     this.companyID,
@@ -65,6 +66,7 @@ class CreateCallCollection {
     this.callEndStamp,
     this.callAnswerStamp,
     this.hangUpCause,
+    this.leadAssigned,
     this.currentCallStatus,
   });
 
@@ -98,6 +100,7 @@ class CreateCallCollection {
     String? callEndStamp,
     String? callAnswerStamp,
     String? hangUpCause,
+    bool? leadAssigned,
     String? currentCallStatus,
   }) {
     return CreateCallCollection(
@@ -130,6 +133,7 @@ class CreateCallCollection {
       callEndStamp: callEndStamp ?? this.callEndStamp,
       callAnswerStamp: callAnswerStamp ?? this.callAnswerStamp,
       hangUpCause: hangUpCause ?? this.hangUpCause,
+      leadAssigned: leadAssigned ?? this.leadAssigned,
       currentCallStatus: currentCallStatus ?? this.currentCallStatus,
     );
   }
@@ -165,6 +169,7 @@ class CreateCallCollection {
       'callEndStamp': callEndStamp,
       'callAnswerStamp': callAnswerStamp,
       'hangUpCause': hangUpCause,
+      'leadAssigned': leadAssigned,
       'currentCallStatus': currentCallStatus,
     };
   }
@@ -200,6 +205,7 @@ class CreateCallCollection {
       callEndStamp: map['callEndStamp'] != null ? map['callEndStamp'] as String : null,
       callAnswerStamp: map['callAnswerStamp'] != null ? map['callAnswerStamp'] as String : null,
       hangUpCause: map['hangUpCause'] != null ? map['hangUpCause'] as String : null,
+      leadAssigned: map['leadAssigned'] != null ? map['leadAssigned'] as bool : null,
       currentCallStatus: map['currentCallStatus'] != null ? map['currentCallStatus'] as String : null,
     );
   }
@@ -210,7 +216,7 @@ class CreateCallCollection {
 
   @override
   String toString() {
-    return 'CreateCallCollection(companyID: $companyID, cuid: $cuid, callerDid: $callerDid, callerNumber: $callerNumber, agentDid: $agentDid, callStartStamp: $callStartStamp, recordingLink: $recordingLink, agentid: $agentid, callStatus: $callStatus, callTranfer: $callTranfer, callTransferIds: $callTransferIds, department: $department, isNewLeadCall: $isNewLeadCall, baseID: $baseID, isSmsSent: $isSmsSent, callDateTime: $callDateTime, advertisedNumber: $advertisedNumber, callDirection: $callDirection, endStamp: $endStamp, duration: $duration, source: $source, ivrName: $ivrName, ivrId: $ivrId, agentPhoneNo: $agentPhoneNo, agentName: $agentName, agentDesignation: $agentDesignation, callEndStamp: $callEndStamp, callAnswerStamp: $callAnswerStamp, hangUpCause: $hangUpCause, currentCallStatus: $currentCallStatus)';
+    return 'CreateCallCollection(companyID: $companyID, cuid: $cuid, callerDid: $callerDid, callerNumber: $callerNumber, agentDid: $agentDid, callStartStamp: $callStartStamp, recordingLink: $recordingLink, agentid: $agentid, callStatus: $callStatus, callTranfer: $callTranfer, callTransferIds: $callTransferIds, department: $department, isNewLeadCall: $isNewLeadCall, baseID: $baseID, isSmsSent: $isSmsSent, callDateTime: $callDateTime, advertisedNumber: $advertisedNumber, callDirection: $callDirection, endStamp: $endStamp, duration: $duration, source: $source, ivrName: $ivrName, ivrId: $ivrId, agentPhoneNo: $agentPhoneNo, agentName: $agentName, agentDesignation: $agentDesignation, callEndStamp: $callEndStamp, callAnswerStamp: $callAnswerStamp, hangUpCause: $hangUpCause, leadAssigned: $leadAssigned, currentCallStatus: $currentCallStatus)';
   }
 
   @override
@@ -248,6 +254,7 @@ class CreateCallCollection {
       other.callEndStamp == callEndStamp &&
       other.callAnswerStamp == callAnswerStamp &&
       other.hangUpCause == hangUpCause &&
+      other.leadAssigned == leadAssigned &&
       other.currentCallStatus == currentCallStatus;
   }
 
@@ -282,6 +289,7 @@ class CreateCallCollection {
       callEndStamp.hashCode ^
       callAnswerStamp.hashCode ^
       hangUpCause.hashCode ^
+      leadAssigned.hashCode ^
       currentCallStatus.hashCode;
   }
-      }
+}

@@ -30,24 +30,41 @@ Future<Response> onRequest(RequestContext context) async {
 
 Future<Response> fetchCompanyID(RequestContext context) async {
   //checking token
+  print("yaha tak chal raha hai11");
   if (context.request.headers['authorization'].toString() !=
       constant.tokenformainapi.toString()) {
     return Response(statusCode: HttpStatus.forbidden);
   }
 
+  print("yaha tak chal raha hai");
   //start process
 
   final body = await context.request.json() as Map<String, dynamic>;
 
+  print("yaha tak chal raha hai2");
+  print(body.toString());
+
+constant.isNewLeadCall=false;
+constant.leadAssigned=true;
   constant.didNumber = body["call_to_number"] as String;
   constant.callerNumber = body["customer_no_with_prefix "] as String;
 
   constant.CIUD = body["uuid"] as String;
   constant.callStartStamp = body["start_stamp"] as String;
   constant.answeredAgentNo = body["answer_agent_number"] as String;
-    constant.answeredAgentNo = body["call_direction"] as String;
-    constant.callStatus= body["call_status"] as String;
-  print(body.toString());
+  constant.answeredAgentNo =
+      "+91" + constant.answeredAgentNo.toString().substring(1);
+  constant.callDirection = body["direction"] as String;
+  constant.callStatus = body["call_status"] as String;
+  print(constant.didNumber.toString() +
+      " " +
+      constant.callerNumber.toString() +
+      " " +
+      constant.answeredAgentNo.toString() +
+      " " +
+      constant.callDirection.toString() +
+      " " +
+      constant.callStatus.toString());
   await constant.db
       .collection("masterCollection")
       .document("didNumbers")
@@ -57,6 +74,7 @@ Future<Response> fetchCompanyID(RequestContext context) async {
       .then(
     (value) async {
       constant.companyID = value[0]["companyId"] as String;
+       constant.source =   constant.companyID = value[0]["distributedAt"] as String;
 
       await constant.db
           .collection("Companies")
@@ -80,7 +98,7 @@ Future<Response> createLead(RequestContext context) async {
   var leadId = DateTime.now().millisecondsSinceEpoch.toString();
   constant.baseID = leadId;
 
-  LeadStatusType statusType = LeadStatusType();
+ 
   LeadPersonalDetails leadPersonalDetails = LeadPersonalDetails(
     name: "",
     mobileNo: constant.callerNumber!,
@@ -102,26 +120,50 @@ Future<Response> createLead(RequestContext context) async {
       personalDetails: leadPersonalDetails,
       subsource: "",
       owner: leadOwnerData);
-
+constant.isNewLeadCall=true;
   LeadsSection leadsSection = LeadsSection();
 
-
-
-await constant.db
+  await constant.db
       .collection("Companies")
       .document(constant.companyID!)
       .collection("leads")
       .where("personalDetails.mobileNo", isEqualTo: constant.callerNumber)
       .get()
-      .then(
-    (value) async {
-      if (value.toString() == "[]") {
+      .then((value) async {
+    if (value.toString() == "[]") {
+      constant.isNewLeadCall = true;
+      leadsSection.addLead(leadData);
+    } 
+       else if (value.toString() != "[]" && value[0]["owner"]["name"].toString()=="") {
 
+      constant.isNewLeadCall = true;
+      
+  LeadPersonalDetails leadPersonalDetails2 = LeadPersonalDetails(
+    name: "",
+    mobileNo: constant.callerNumber!,
+  );
+  LeadOwner leadOwnerData2 = LeadOwner(
+      name: constant.empName!,
+      id: constant.empID!,
+      designation: constant.empDesignation!);
+
+  Lead leadData2 = Lead(
+      companyId: constant.companyID,
+      id: value[0]["id"].toString(),
+      source: "Newspaper",
+      status: "Fresh",
+      subStatus: "",
+      hotLead: false,
+      createdOn: DateTime.now(),
+      leadStatusType: LeadStatusType.FRESH,
+      personalDetails: leadPersonalDetails2,
+      subsource: "",
+      owner: leadOwnerData2);
 constant.isNewLeadCall=true;
-  leadsSection.addLead(leadData);
-
-      }});
-
+  LeadsSection leadsSection = LeadsSection();
+      leadsSection.updateLead(leadData2);
+    } 
+  });
 
   return createCallDetails(context);
 }
@@ -134,14 +176,13 @@ Future<Response> createCallDetails(RequestContext context) async {
   CreateCallCollection callDetails = CreateCallCollection(
       companyID: constant.companyID,
       duration: "",
-      source: "Newspaper",
+      source:  constant.source,
       endStamp: "",
       ivrId: "",
       ivrName: "",
       agentPhoneNo: constant.empPhoneno,
       agentName: constant.empName,
       agentDesignation: constant.empDesignation,
-
       cuid: constant.CIUD,
       callerDid: constant.didNumber,
       callerNumber: constant.callerNumber,
@@ -162,7 +203,8 @@ Future<Response> createCallDetails(RequestContext context) async {
       isSmsSent: false,
       callDateTime: DateTime.now().toString(),
       advertisedNumber: false,
-      callDirection:constant.callDirection);
+      callDirection: constant.callDirection,
+      leadAssigned: constant.leadAssigned);
 
   callrecord.addCallRecord(callDetails);
 

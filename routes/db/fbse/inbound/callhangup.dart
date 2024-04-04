@@ -38,8 +38,10 @@ Future<Response> fetchCompanyID(RequestContext context) async {
   //start process
 
   final body = await context.request.json() as Map<String, dynamic>;
-  print(body.toString());
 
+  print(body.toString());
+  constant.leadAssigned=true;
+  constant.isNewLeadCall = false;
   constant.CIUD = body["uuid"] as String;
   constant.didNumber = body["call_to_number"] as String;
   constant.callerNumber = body["customer_no_with_prefix "] as String;
@@ -50,16 +52,22 @@ Future<Response> fetchCompanyID(RequestContext context) async {
   constant.callDirection = body["direction"] as String;
   constant.callduration = body["duration"] as String;
   constant.answeredAgentNo = body["answered_agent_number"] as String;
+
   constant.recordingLink = body["recording_url"] as String;
   constant.callStatus = body["call_status"] as String;
+
   if (constant.callStatus == "missed") {
     constant.answeredAgentNo =
-        "+91" + body["missed_agent"][0]["agent_number"].toString().substring(1);
+        "+91" + body["missed_agent"][0]["number"].toString().substring(1);
 
     print("number is " + constant.answeredAgentNo.toString());
+  } else {
+
+  constant.answeredAgentNo =
+      "+91" + constant.answeredAgentNo.toString().substring(1);
+
   }
 
-  print(body.toString());
   await constant.db
       .collection("masterCollection")
       .document("didNumbers")
@@ -68,8 +76,10 @@ Future<Response> fetchCompanyID(RequestContext context) async {
       .get()
       .then(
     (value) async {
+   
       constant.companyID = value[0]["companyId"] as String;
-
+       constant.source =   constant.companyID = value[0]["distributedAt"] as String;
+   
       await constant.db
           .collection("Companies")
           .document(constant.companyID!)
@@ -97,10 +107,10 @@ Future<Response> createLead(RequestContext context) async {
     name: "",
     mobileNo: constant.callerNumber!,
   );
-  // LeadOwner leadOwnerData = LeadOwner(
-  //     name: constant.empName!,
-  //     id: constant.empID!,
-  //     designation: constant.empDesignation!);
+  LeadOwner leadOwnerData = LeadOwner(
+      name: "",
+      id: "",
+      designation: "");
 
   Lead leadData = Lead(
     companyId: constant.companyID,
@@ -113,6 +123,7 @@ Future<Response> createLead(RequestContext context) async {
     leadStatusType: LeadStatusType.FRESH,
     personalDetails: leadPersonalDetails,
     subsource: "",
+    owner: leadOwnerData
   );
 
   LeadsSection leadsSection = LeadsSection();
@@ -126,8 +137,25 @@ Future<Response> createLead(RequestContext context) async {
       .then((value) async {
     if (value.toString() == "[]") {
       constant.isNewLeadCall = true;
+      constant.leadAssigned=false;
       leadsSection.addLead(leadData);
-    }
+    } 
+  //   else if (value.toString() != "[]" && value[0]["owner"]["name"].toString()=="") {
+  //     constant.isNewLeadCall = true;
+  //       Lead leadData2 = Lead(
+  //   companyId: constant.companyID,
+  //   id: value[0]["id"].toString(),
+  //   source: "Newspaper",
+  //   status: "Fresh",
+  //   subStatus: "",
+  //   hotLead: false,
+  //   createdOn: DateTime.now(),
+  //   leadStatusType: LeadStatusType.FRESH,
+  //   personalDetails: leadPersonalDetails,
+  //   subsource: "",
+  // );
+  //     leadsSection.updateLead(leadData2);
+  //   } 
   });
 
   return createCallDetails(context);
@@ -141,7 +169,7 @@ Future<Response> createCallDetails(RequestContext context) async {
   CreateCallCollection callDetails = CreateCallCollection(
       companyID: constant.companyID,
       duration: constant.callduration,
-      source: "Sales",
+      source:  constant.source ,
       endStamp: constant.callEndStamp,
       ivrId: "",
       ivrName: "",
@@ -168,7 +196,9 @@ Future<Response> createCallDetails(RequestContext context) async {
       callDateTime: DateTime.now().toString(),
       advertisedNumber: false,
       callDirection: constant.callDirection,
-      currentCallStatus: "Ended");
+      currentCallStatus: "Ended",
+      leadAssigned: constant.leadAssigned
+      );
 
   if (constant.callStatus == "answered") {
     callrecord.updateCallRecord(callDetails);
